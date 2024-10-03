@@ -15,19 +15,26 @@
 #
 import io
 import os
+import pathlib
 
 import setuptools  # type: ignore
 
-package_root = os.path.abspath(os.path.dirname(__file__))
+package_root = pathlib.Path(__file__).parent.resolve()
 
 name = "google-generativeai"
 
 description = "Google Generative AI High level API client library and tools."
 
-version = {}
-with open(os.path.join(package_root, "google/generativeai/version.py")) as fp:
-    exec(fp.read(), version)
-version = version["__version__"]
+
+def get_version():
+    version = {}
+    version_source = (package_root / "google/generativeai/version.py").read_text()
+    exec(version_source, version)
+    version = version["__version__"]
+    return version
+
+
+version = get_version()
 
 if version[0] == "0":
     release_status = "Development Status :: 4 - Beta"
@@ -35,30 +42,26 @@ else:
     release_status = "Development Status :: 5 - Production/Stable"
 
 dependencies = [
-    "google-ai-generativelanguage==0.1.0"
+    "google-ai-generativelanguage==0.6.10",
+    "google-api-core",
+    "google-api-python-client",
+    "google-auth>=2.15.0",  # 2.15 adds API key auth support
+    "protobuf",
+    "pydantic",
+    "tqdm",
+    "typing-extensions",
 ]
 
 extras_require = {
-    "dev": [
-        "absl-py",
-        "asynctest",
-        "black",
-        "nose2",
-        "pytype",
-        "pyyaml",
-    ],
+    "dev": ["absl-py", "black", "nose2", "pandas", "pytype", "pyyaml", "Pillow", "ipython"],
 }
 
 url = "https://github.com/google/generative-ai-python"
 
-readme_filename = os.path.join(package_root, "README.md")
-with io.open(readme_filename, encoding="utf-8") as readme_file:
-    readme = readme_file.read()
+readme = (package_root / "README.md").read_text()
 
 packages = [
-    package
-    for package in setuptools.PEP420PackageFinder.find()
-    if package.startswith("google")
+    package for package in setuptools.PEP420PackageFinder.find() if package.startswith("google")
 ]
 
 namespaces = ["google"]
@@ -68,6 +71,7 @@ setuptools.setup(
     version=version,
     description=description,
     long_description=readme,
+    long_description_content_type="text/markdown",
     author="Google LLC",
     author_email="googleapis-packages@google.com",
     license="Apache 2.0",
@@ -78,16 +82,16 @@ setuptools.setup(
         "License :: OSI Approved :: Apache Software License",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.8",  # Colab
         "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.10",  # Colab
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         "Operating System :: OS Independent",
         "Topic :: Scientific/Engineering :: Artificial Intelligence",
     ],
     platforms="Posix; MacOS X; Windows",
     packages=packages,
-    python_requires=">=3.8",
+    python_requires=">=3.9",
     namespace_packages=namespaces,
     install_requires=dependencies,
     extras_require=extras_require,
